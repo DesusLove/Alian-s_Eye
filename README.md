@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="photos/logo.png" alt="Alien's Eye Logo" width="600">
+  <img src="photos/logo.png" alt="Alien's Eye Logo" width="400">
 </div>
 
 <h1 align="center">👁️ ALIEN'S EYE</h1>
