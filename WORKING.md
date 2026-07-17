@@ -28,20 +28,20 @@ flowchart TD
 
 ## Module map
 
-- `src/alien's_eye/cli.py`: argparse CLI, subcommands (`selfcheck`, `train`), interactive prompts
-- `src/alien's_eye/core/analyzer.py`: HTML parsing and feature extraction (selectolax)
-- `src/alien's_eye/core/http.py`: fetch with retries, backoff, response size caps, HTTP proxy
-- `src/alien's_eye/core/rate_limit.py`: per-domain delay control
-- `src/alien's_eye/core/detector.py`: ML + heuristic blended scoring and status selection
-- `src/alien's_eye/core/fingerprints.py`: persisted match fingerprints by site
-- `src/alien's_eye/core/scanner.py`: async queue workers, site filtering, SOCKS connector
-- `src/alien's_eye/core/exporter.py`: JSON/CSV/HTML/Markdown report generation
-- `src/alien's_eye/ml/inference.py`: pure-python model inference (no sklearn at runtime)
-- `src/alien's_eye/ml/collect.py`: labeled dataset builder from ground-truth accounts
-- `src/alien's_eye/ml/train.py`: sklearn training, exports coefficients to model.json
-- `src/alien's_eye/selfcheck.py`: accuracy validation against known accounts
-- `src/alien's_eye/utils/console.py`: rich-based progress, tables, panels
-- `src/alien's_eye/data/`: sites.json, model.json, selfcheck.json, nsfw_sites.json, seed_dataset.csv
+- `src/alians_eye/cli.py`: argparse CLI, subcommands (`selfcheck`, `train`), interactive prompts
+- `src/alians_eye/core/analyzer.py`: HTML parsing and feature extraction (selectolax)
+- `src/alians_eye/core/http.py`: fetch with retries, backoff, response size caps, HTTP proxy
+- `src/alians_eye/core/rate_limit.py`: per-domain delay control
+- `src/alians_eye/core/detector.py`: ML + heuristic blended scoring and status selection
+- `src/alians_eye/core/fingerprints.py`: persisted match fingerprints by site
+- `src/alians_eye/core/scanner.py`: async queue workers, site filtering, SOCKS connector
+- `src/alians_eye/core/exporter.py`: JSON/CSV/HTML/Markdown report generation
+- `src/alians_eye/ml/inference.py`: pure-python model inference (no sklearn at runtime)
+- `src/alians_eye/ml/collect.py`: labeled dataset builder from ground-truth accounts
+- `src/alians_eye/ml/train.py`: sklearn training, exports coefficients to model.json
+- `src/alians_eye/selfcheck.py`: accuracy validation against known accounts
+- `src/alians_eye/utils/console.py`: rich-based progress, tables, panels
+- `src/alians_eye/data/`: sites.json, model.json, selfcheck.json, nsfw_sites.json, seed_dataset.csv
 
 ## Feature extraction
 
@@ -76,13 +76,13 @@ back to heuristics alone.
 
 ### Training pipeline
 
-- `alien's_eye train collect` scans ground-truth accounts from
+- `alians_eye train collect` scans ground-truth accounts from
   `data/selfcheck.json` (label 1) and randomized non-existent usernames
   (label 0), writing one feature row per scan.
-- `alien's_eye train fit` trains LogisticRegression + StandardScaler and exports
+- `alians_eye train fit` trains LogisticRegression + StandardScaler and exports
   the model JSON. Blend weights and thresholds in `core/detector.py` were
   calibrated by out-of-fold grid search on the seed dataset.
-- `alien's_eye selfcheck` measures live accuracy on the positives.
+- `alians_eye selfcheck` measures live accuracy on the positives.
 
 ## Fingerprints
 
@@ -110,7 +110,7 @@ The cache lives in the platform cache dir (via `platformdirs`), not in the packa
 ## Playwright fallback (optional)
 
 If enabled, Playwright is used only when a result is Maybe. The rendered DOM is
-re-parsed and can upgrade confidence. Install with `pip install alien's-eye[browser]`.
+re-parsed and can upgrade confidence. Install with `pip install aliens-eye[browser]`.
 
 ## Output pipeline
 

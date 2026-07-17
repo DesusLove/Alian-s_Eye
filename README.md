@@ -11,9 +11,9 @@
 
 <p align="center">
   <a href="https://pypi.org/project/aliens-eye"><img alt="PyPI" src="https://img.shields.io/pypi/v/aliens-eye?style=flat-square&logo=pypi"></a>
-  <a href="https://github.com/arxhr007/Aliens_eye/actions/workflows/ci.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/arxhr007/Aliens_eye/ci.yml?style=flat-square&logo=github"></a>
+  <a href="https://github.com/DesusLove/Alian-s_Eye/actions/workflows/ci.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/DesusLove/Alian-s_Eye/ci.yml?style=flat-square&logo=github"></a>
   <a href="#"><img alt="Python" src="https://img.shields.io/pypi/pyversions/aliens-eye?style=flat-square&logo=python"></a>
-  <a href="#"><img alt="License" src="https://img.shields.io/github/license/arxhr007/Aliens_eye?style=flat-square"></a>
+  <a href="#"><img alt="License" src="https://img.shields.io/github/license/DesusLove/Alian-s_Eye?style=flat-square"></a>
 </p>
 
 ---
@@ -66,7 +66,7 @@ pip install "aliens-eye[serve]"     # MCP server for LLM agents
 
 From source:
 ```bash
-git clone https://github.com/arxhr007/Aliens_eye.git
+git clone https://github.com/DesusLove/Alian-s_Eye.git
 cd Aliens_eye
 pip install -e .
 ```

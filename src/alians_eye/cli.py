@@ -59,7 +59,7 @@ def display_banner(site_count: int) -> None:
 [blue]/_____/   /_/_____/  [red]  | |/ /[white] / __/
                       [red] |___/ [white]/____/
 
-[green]by [yellow]arxhr007  [dim]v{__version__}[/dim]"""
+[green]by [yellow]DesusLove  [dim]v{__version__}[/dim]"""
     console.print(banner)
     console.print("[yellow]AI-OSINT USERNAME SCANNER[/yellow]")
     console.print("[red]NOTE: For educational purposes only!\n[/red]")

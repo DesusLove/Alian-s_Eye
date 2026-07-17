@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-"""Backward-compatible launcher. Prefer `pip install alien's-eye` and the
+"""Backward-compatible launcher. Prefer `pip install aliens-eye` and the
 `alians_eye` command; this shim keeps `python alians_eye.py` working from a
 source checkout."""
 

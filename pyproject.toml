@@ -9,7 +9,7 @@ description = "AI-powered OSINT username scanner across 800+ social media and we
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }
-authors = [{ name = "Aaron Thomas (arxhr007)" }]
+authors = [{ name = "DesusLove" }]
 keywords = ["osint", "username", "recon", "social-media", "security", "scanner"]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
@@ -51,9 +51,9 @@ dev = [
 alians_eye = "alians_eye.cli:main"
 
 [project.urls]
-Homepage = "https://github.com/arxhr007/Aliens_eye"
-Repository = "https://github.com/arxhr007/Aliens_eye"
-Issues = "https://github.com/arxhr007/Aliens_eye/issues"
+Homepage = "https://github.com/DesusLove/Alian-s_Eye"
+Repository = "https://github.com/DesusLove/Alian-s_Eye"
+Issues = "https://github.com/DesusLove/Alian-s_Eye/issues"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/alians_eye"]
