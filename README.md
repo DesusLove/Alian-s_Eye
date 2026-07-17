@@ -35,7 +35,11 @@ A **terminal-based OSINT scanner** that checks 840+ social networks and web plat
 | **Correlation** | Cluster profiles by avatar, bio, links (`--correlate`) · Domain checks (`--domains`) |
 | **Watch** | Periodic re-scan with webhook alerts (`--watch 6h --notify <url>`) |
 | **ML lifecycle** | Train custom models · hand-label uncertain results · self-check accuracy |
-| **Outputs** | JSON, CSV, HTML, Markdown, PDF, GEXF, Mermaid, Maltego |
+| **Outputs** | JSON, CSV, HTML, Markdown, PDF, XLSX, GEXF, Mermaid, Maltego |
+| **Batch scan** | Scan from file (`--from-file usernames.txt`) |
+| **History** | SQLite-backed scan history browsable via dashboard |
+| **Web UI** | FastAPI dashboard (`alians_eye web`) |
+| **Completions** | Shell autocompletion (`--completion bash\|zsh`) |
 | **Extras** | Playwright fallback · Textual TUI · MCP server for LLM agents |
 
 ---
@@ -62,6 +66,8 @@ pip install "aliens-eye[correlate]" # Pillow for avatar matching
 pip install "aliens-eye[pdf]"       # PDF report generation
 pip install "aliens-eye[tui]"       # Interactive terminal UI
 pip install "aliens-eye[serve]"     # MCP server for LLM agents
+pip install "aliens-eye[web]"       # Web dashboard (FastAPI)
+pip install "aliens-eye[xlsx]"     # Excel export
 ```
 
 From source:
@@ -99,6 +105,12 @@ aliens_eye username --resume scan.jsonl
 aliens_eye username --profile quick
 ```
 
+### Batch scanning
+```bash
+aliens_eye --from-file usernames.txt
+aliens_eye --from-file usernames.txt -l advanced
+```
+
 ### Privacy & routing
 ```bash
 aliens_eye username --tor
@@ -113,6 +125,8 @@ aliens_eye selfcheck --negatives 2
 aliens_eye label results/report.json --out labeled.csv
 aliens_eye tui username
 aliens_eye serve
+aliens_eye web --port 8765
+aliens_eye --completion bash > /etc/bash_completion.d/alians_eye
 ```
 
 ---

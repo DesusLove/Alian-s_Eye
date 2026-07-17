@@ -11,7 +11,7 @@ from rich.prompt import Prompt
 from alians_eye.utils.console import build_results_table, get_console
 
 KNOWN_FORMATS = {
-    "json", "csv", "html", "md", "markdown",
+    "json", "csv", "html", "md", "markdown", "xlsx",
     "gexf", "maltego", "mermaid", "pdf", "all",
 }
 
@@ -91,6 +91,10 @@ class ResultsExporter:
             p = self.output_dir / f"{stem}.pdf"
             if self._write_pdf(p, results_data):
                 written.append(p)
+        if "xlsx" in formats or "all" in formats:
+            xlsx_path = self.output_dir / f"{stem}.xlsx"
+            if self._write_xlsx(xlsx_path, base_username, level, all_results):
+                written.append(xlsx_path)
 
         return written
 
@@ -167,6 +171,52 @@ class ResultsExporter:
         )[:5]
 
         return {"scan_summary": scan_summary, "variations": variations_data}
+
+    def _write_xlsx(
+        self,
+        path: Path,
+        base_username: str,
+        level: str,
+        all_results: dict[str, list[dict[str, Any]]],
+    ) -> bool:
+        """Write results to an Excel workbook. Returns False if openpyxl is missing."""
+        try:
+            import openpyxl
+        except ImportError:
+            self.console.print(
+                "[yellow]XLSX export needs openpyxl: pip install \"aliens-eye[xlsx]\"[/yellow]"
+            )
+            return False
+
+        wb = openpyxl.Workbook()
+        wb.remove(wb.active)
+
+        for variation, results in all_results.items():
+            ws = wb.create_sheet(title=variation[:31])
+            ws.append(["Site", "Status", "Confidence", "HTTP Code", "URL", "Final URL", "Response Time"])
+            for item in results:
+                ws.append([
+                    item["site"],
+                    item["status"],
+                    item.get("confidence", 0),
+                    item.get("code", 0),
+                    item.get("url", ""),
+                    item.get("final_url", ""),
+                    item.get("response_time", 0),
+                ])
+
+            from openpyxl.styles import Font, PatternFill
+            header_font = Font(bold=True, color="FFFFFF")
+            header_fill = PatternFill(start_color="2A2A5A", end_color="2A2A5A", fill_type="solid")
+            for cell in ws[1]:
+                cell.font = header_font
+                cell.fill = header_fill
+            for col in ws.columns:
+                max_len = max(len(str(c.value or "")) for c in col)
+                ws.column_dimensions[col[0].column_letter].width = min(max_len + 2, 60)
+
+        wb.save(str(path))
+        return True
 
     def _write_csv(
         self,

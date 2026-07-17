@@ -92,7 +92,7 @@ def build_parser() -> ArgumentParser:
         "--format",
         type=str,
         default=None,
-        help="Output formats: json,csv,html,md,all",
+        help="Output formats: json,csv,html,md,xlsx,all",
     )
     parser.add_argument("--output", type=str, default=None, help="Output directory")
     parser.add_argument(
@@ -156,6 +156,12 @@ def build_parser() -> ArgumentParser:
     )
     parser.add_argument(
         "--json-stdout", action="store_true", help="Print results JSON to stdout (implies --plain)"
+    )
+    parser.add_argument(
+        "--from-file", type=str, help="Read usernames from a text file (one per line)"
+    )
+    parser.add_argument(
+        "--completion", choices=["bash", "zsh"], help="Print shell completion script and exit"
     )
     return parser
 
@@ -226,6 +232,16 @@ def build_serve_parser() -> ArgumentParser:
     return parser
 
 
+def build_web_parser() -> ArgumentParser:
+    parser = ArgumentParser(
+        prog="alians_eye web",
+        description="Launch the web dashboard",
+    )
+    parser.add_argument("--host", type=str, default="127.0.0.1", help="Host to bind (default: 127.0.0.1)")
+    parser.add_argument("-p", "--port", type=int, default=8765, help="Port to bind (default: 8765)")
+    return parser
+
+
 def build_tui_parser() -> ArgumentParser:
     parser = ArgumentParser(
         prog="alians_eye tui",
@@ -291,6 +307,104 @@ def seed_usernames_from_lookups(args) -> list[str]:
         if len(digits) >= 4:
             seeds.append(digits)
     return seeds
+
+
+def _usernames_from_file(path: str, logger) -> list[str]:
+    """Read usernames from a text file (one per line, ignores blanks/comments)."""
+    try:
+        with open(path, encoding="utf-8") as f:
+            lines = [line.strip() for line in f]
+        usernames = [
+            line for line in lines
+            if line and not line.startswith("#")
+        ]
+        logger.info("Loaded %d username(s) from %s", len(usernames), path)
+        return usernames
+    except FileNotFoundError:
+        logger.error("File not found: %s", path)
+        return []
+
+
+def _print_completion_script(shell: str) -> None:
+    """Print a shell completion script for bash or zsh."""
+    if shell == "bash":
+        print("""_alians_eye_completions() {
+    local cur prev opts
+    COMPREPLY=()
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+    opts="-V -r -c -v -l --version --read --concurrent --verbose --level
+          --timeout --retries --backoff-base --backoff-cap --rate-limit
+          --max-bytes --config --format --output --playwright --proxy --tor
+          --site --exclude-site --no-nsfw --no-ml --model --sites --plain
+          --profile --watch --notify --correlate --domains --recurse-depth
+          --sites-dir --resume --from-email --from-name --from-phone
+          --only-found --json-stdout --from-file --completion
+          selfcheck train diff serve tui label help"
+    case "${prev}" in
+        -l|--level) COMPREPLY=($(compgen -W "basic intermediate advanced" -- "${cur}")) ;;
+        --profile) COMPREPLY=($(compgen -W "quick full aggressive" -- "${cur}")) ;;
+        --completion) COMPREPLY=($(compgen -W "bash zsh" -- "${cur}")) ;;
+        *) COMPREPLY=($(compgen -W "${opts}" -- "${cur}")) ;;
+    esac
+    return 0
+}
+complete -F _alians_eye_completions alians_eye""")
+    elif shell == "zsh":
+        print("""#compdef alians_eye
+
+_alians_eye() {
+    local -a opts
+    opts=(
+        '(-V --version)'{-V,--version}'[show version]'
+        '(-r --read)'{-r,--read}'[read results file]:file:_files'
+        '(-c --concurrent)'{-c,--concurrent}'[max concurrent connections]'
+        '(-v --verbose)'{-v,--verbose}'[verbose output]'
+        '(-l --level)'{-l,--level}'[scan level]:level:(basic intermediate advanced)'
+        '--timeout[request timeout]'
+        '--retries[retry count]'
+        '--backoff-base[backoff base]'
+        '--backoff-cap[backoff cap]'
+        '--rate-limit[rate limit]'
+        '--max-bytes[max response bytes]'
+        '--config[config path]:file:_files'
+        '--format[output formats]'
+        '--output[output directory]:directory:_directories'
+        '--playwright[enable playwright]'
+        '--proxy[proxy url]'
+        '--tor[route through tor]'
+        '--site[filter sites]'
+        '--exclude-site[exclude sites]'
+        '--no-nsfw[skip nsfw]'
+        '--no-ml[disable ml]'
+        '--model[model path]:file:_files'
+        '--sites[sites path]:file:_files'
+        '--plain[plain output]'
+        '--profile[scan profile]:profile:(quick full aggressive)'
+        '--watch[watch interval]'
+        '--notify[webhook url]'
+        '--correlate[correlate profiles]'
+        '--domains[check domains]'
+        '--recurse-depth[recursion depth]'
+        '--sites-dir[sites directory]:directory:_directories'
+        '--resume[resume checkpoint]:file:_files'
+        '--from-email[seed from email]'
+        '--from-name[seed from name]'
+        '--from-phone[seed from phone]'
+        '--only-found[only found results]'
+        '--json-stdout[json to stdout]'
+        '--from-file[usernames file]:file:_files'
+        '--completion[completion shell]:shell:(bash zsh)'
+        'selfcheck:run selfcheck'
+        'train:train model'
+        'diff:diff reports'
+        'serve:start mcp server'
+        'tui:start terminal ui'
+        'label:label results'
+    )
+    _arguments $opts
+}
+_alians_eye""")
 
 
 def prompt_scan_profile() -> str:
@@ -557,6 +671,8 @@ async def run_scan(args) -> None:
 
     usernames = list(args.username)
     usernames.extend(seed_usernames_from_lookups(args))
+    if args.from_file:
+        usernames.extend(_usernames_from_file(args.from_file, logger))
     usernames = list(dict.fromkeys(usernames))
     if not usernames:
         if config.json_stdout:
@@ -694,6 +810,14 @@ async def run_scan(args) -> None:
         fingerprints.save()
         if browser_fallback:
             await browser_fallback.close()
+
+    # Save scan to history database
+    try:
+        from alians_eye.core.history import HistoryDB
+        history = HistoryDB()
+        history.save_scan(username, scan_level, all_results, total_found)
+    except Exception:
+        pass
 
 
 async def _recurse_scan(scanner, all_results, base_username, scan_level, depth, console) -> None:
@@ -854,6 +978,12 @@ async def run_serve_command(args) -> None:
     await serve(args)
 
 
+def run_web_command(args) -> None:
+    from alians_eye.web.app import run_web
+
+    run_web(host=args.host, port=args.port)
+
+
 def run_tui_command(args) -> None:
     from alians_eye.tui.app import run_tui
 
@@ -872,6 +1002,14 @@ def main() -> None:
         sys.stderr.reconfigure(encoding="utf-8", errors="replace")  # type: ignore[union-attr]
     argv = sys.argv[1:]
     console = get_console()
+
+    # Handle --completion early (before any subcommand dispatch)
+    if "--completion" in argv:
+        parser = build_parser()
+        args, _ = parser.parse_known_args(argv)
+        if args.completion:
+            _print_completion_script(args.completion)
+            return
     try:
         if argv and argv[0] == "selfcheck":
             args = build_selfcheck_parser().parse_args(argv[1:])
@@ -885,6 +1023,9 @@ def main() -> None:
         elif argv and argv[0] == "serve":
             args = build_serve_parser().parse_args(argv[1:])
             asyncio.run(run_serve_command(args))
+        elif argv and argv[0] == "web":
+            args = build_web_parser().parse_args(argv[1:])
+            run_web_command(args)
         elif argv and argv[0] == "tui":
             args = build_tui_parser().parse_args(argv[1:])
             run_tui_command(args)
